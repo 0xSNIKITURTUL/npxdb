@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/damishra/streamly/shared"
 )
@@ -21,7 +20,7 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	fullname := request.Form.Get("name")
-	if strings.Compare(fullname, "") != 0 {
+	if fullname != "" {
 		writer.Write([]byte("Bad Request: field `name` is empty"))
 		return
 	}
