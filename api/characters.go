@@ -3,6 +3,8 @@ package handler
 import (
 	"net/http"
 	"strings"
+
+	"github.com/damishra/streamly/shared"
 )
 
 func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
@@ -12,6 +14,10 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		writer.Write([]byte("Method Not Allowed"))
 		return
+	}
+
+	if err := request.ParseForm(); err != nil {
+		shared.HandleServerError(&writer, err)
 	}
 
 	fullname := request.Form.Get("name")
