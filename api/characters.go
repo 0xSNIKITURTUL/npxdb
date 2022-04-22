@@ -19,8 +19,8 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	fullname := strings.Trim(request.Form.Get("name"), " ")
-	if len(fullname) == 0 {
+	fullname := request.Form.Get("name")
+	if strings.Compare(fullname, "") != 0 {
 		if _, err := writer.Write([]byte("Bad Request: field `name` is empty")); err != nil {
 			shared.HandleServerError(&writer, err)
 		}
