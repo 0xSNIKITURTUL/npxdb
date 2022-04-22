@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/damishra/streamly/shared"
+	"github.com/jackc/pgx/v4"
 )
 
 func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
@@ -25,13 +29,18 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	writer.Write([]byte(fullname))
-	/*
-		character, err := shared.SearchCharacter(fullname)
-		if err != nil {
-			writer.Write([]byte("Character Not Found"))
-		}
-		responseStr := fmt.Sprintf("%s is played by twitch.tv/%s", character.Fullname, character.Username)
-		writer.Write([]byte(responseStr))
-	*/
+	ctx := context.Background()
+
+	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		shared.HandleServerError(&writer, err)
+	}
+
+	character, err := shared.SearchCharacter(ctx, fullname, conn)
+	if err != nil {
+		writer.Write([]byte("Character Not Found"))
+	}
+
+	responseStr := fmt.Sprintf("%s is played by twitch.tv/%s", character.Fullname, character.Username)
+	writer.Write([]byte(responseStr))
 }
