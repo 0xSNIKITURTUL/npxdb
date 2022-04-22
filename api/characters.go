@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -22,6 +23,7 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 
 	fullname := request.Form.Get("name")
 	fullname, _ = url.QueryUnescape(fullname)
+	log.Println(fullname)
 	if strings.Compare(fullname, "") != 0 {
 		if _, err := writer.Write([]byte("Bad Request: field `name` is empty")); err != nil {
 			shared.HandleServerError(&writer, err)
