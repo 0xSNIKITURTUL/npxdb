@@ -17,15 +17,15 @@ const schema string = `DROP TABLE IF EXISTS public.characters;
 DROP TABLE IF EXISTS public.streamers;
 CREATE TABLE public.streamers (
 	id BIGSERIAL PRIMARY KEY,
-	username VARCHAR(32) UNIQUE NOT NULL,
-	pid VARCHAR(32) UNIQUE NOT NULL
+	username VARCHAR(32) NOT NULL,
+	pid VARCHAR(32) NOT NULL,
+	UNIQUE(username, pid)
 );
 CREATE TABLE public.characters (
 	id BIGSERIAL PRIMARY KEY,
 	fullname VARCHAR(255) NOT NULL,
 	fullname_token TSVECTOR NOT NULL,
-	player BIGINT NOT NULL REFERENCES public.streamers(id),
-	UNIQUE (fullname, player)
+	player BIGINT NOT NULL REFERENCES public.streamers(id)
 );`
 
 var ctx = context.Background()
@@ -111,8 +111,6 @@ func LoadStreamers(pool *pgxpool.Pool, streamers [][]interface{}) error {
 
 func LoadCharacters(pool *pgxpool.Pool, characters [][]string) {
 	var wg sync.WaitGroup
-	count := 0
-	defer log.Printf("Characters inserted: %d", count)
 	defer wg.Wait()
 
 	for _, character := range characters {
@@ -137,7 +135,6 @@ func LoadCharacters(pool *pgxpool.Pool, characters [][]string) {
 			if err != nil {
 				log.Printf("error: %s", err.Error())
 			}
-			count++
 		}(character, pool)
 	}
 }
