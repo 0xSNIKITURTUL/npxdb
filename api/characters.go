@@ -20,7 +20,7 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	fullname := request.Form.Get("name")
-	if fullname != "" {
+	if fullname == "" {
 		writer.Write([]byte("Bad Request: field `name` is empty"))
 		return
 	}
