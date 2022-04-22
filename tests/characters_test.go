@@ -1,13 +1,18 @@
 package tests
 
 import (
+	"context"
+	"os"
 	"testing"
 
 	"github.com/damishra/streamly/shared"
+	"github.com/jackc/pgx/v4"
 	"github.com/joho/godotenv"
 )
 
 func TestSearchCharacter(test *testing.T) {
+	ctx := context.Background()
+
 	if err := godotenv.Load("../.env"); err != nil {
 		test.Errorf("Error occured: %s", err.Error())
 	}
@@ -15,7 +20,12 @@ func TestSearchCharacter(test *testing.T) {
 	characterName := "Ka chao"
 	expected := "kristoferyee"
 
-	character, err := shared.SearchCharacter(characterName)
+	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		test.Errorf("Error occured: %s", err.Error())
+	}
+
+	character, err := shared.SearchCharacter(ctx, characterName, conn)
 	if err != nil {
 		test.Errorf("Error occured: %s", err.Error())
 	}

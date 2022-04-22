@@ -2,7 +2,6 @@ package shared
 
 import (
 	"context"
-	"os"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -13,14 +12,7 @@ type Character struct {
 	Username string
 }
 
-func SearchCharacter(name string) (*Character, error) {
-	var ctx = context.Background()
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
-	defer conn.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func SearchCharacter(ctx context.Context, name string, conn *pgx.Conn) (*Character, error) {
 	parts := strings.Split(name, " ")
 	queryString := strings.Join(parts, " & ")
 
