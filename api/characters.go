@@ -38,7 +38,7 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 	defer conn.Close(ctx)
 
 	character, err := shared.SearchCharacter(ctx, fullname, conn)
-	if err != nil {
+	if err != nil || character == nil {
 		writer.Write([]byte("Character Not Found"))
 	}
 
