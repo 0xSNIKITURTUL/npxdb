@@ -2,7 +2,6 @@ package shared
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -26,10 +25,6 @@ func SearchCharacter(ctx context.Context, name string, conn *pgx.Conn) (*Charact
 	`, queryString)
 	if err := result.Scan(&fullname, &username); err != nil {
 		return nil, err
-	}
-
-	if &fullname == nil || &username == nil {
-		return nil, fmt.Errorf("nothing found in database")
 	}
 
 	return &Character{
