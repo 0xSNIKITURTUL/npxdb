@@ -1,4 +1,4 @@
-module github.com/damishra/streamly
+module github.com/damishra/NopixelDB
 
 go 1.17
 
