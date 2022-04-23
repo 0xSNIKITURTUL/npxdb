@@ -38,8 +38,9 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 	defer conn.Close(ctx)
 
 	character, err := shared.SearchCharacter(ctx, fullname, conn)
-	if err != nil || character == nil {
+	if err != nil {
 		writer.Write([]byte("Character Not Found"))
+		return
 	}
 
 	responseStr := fmt.Sprintf("%s is played by twitch.tv/%s", character.Fullname, character.Username)
