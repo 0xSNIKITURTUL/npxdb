@@ -21,6 +21,7 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 
 	if err := request.ParseForm(); err != nil {
 		shared.HandleServerError(&writer, err)
+		return
 	}
 
 	fullname := request.Form.Get("name")
@@ -34,6 +35,7 @@ func CharacterHandler(writer http.ResponseWriter, request *http.Request) {
 	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		shared.HandleServerError(&writer, err)
+		return
 	}
 	defer conn.Close(ctx)
 

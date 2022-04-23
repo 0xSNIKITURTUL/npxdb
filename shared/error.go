@@ -6,6 +6,6 @@ import (
 )
 
 func HandleServerError(writer *http.ResponseWriter, err error) {
-	defer log.Fatalln(err.Error())
+	defer log.Println(err.Error())
 	(*writer).Write([]byte("Internal Server Error"))
 }
