@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"strings"
@@ -30,7 +31,11 @@ CREATE TABLE public.characters (
 
 var ctx = context.Background()
 
+var fullreset = flag.Bool("reset", false, "reset the database and insert fresh values")
+
 func main() {
+	flag.Parse()
+
 	pool, err := pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("error: %s", err.Error())
@@ -38,9 +43,15 @@ func main() {
 	}
 	defer pool.Close()
 
-	streamers, characters := FetchData()
+	if *fullreset {
+		if err := ClearDB(pool); err != nil {
+			log.Fatalf("error: %s", err.Error())
+			return
+		}
+	}
 
-	if err := ClearDB(pool); err != nil {
+	streamers, characters := FetchData(pool)
+	if err != nil {
 		log.Fatalf("error: %s", err.Error())
 		return
 	}
@@ -53,14 +64,41 @@ func main() {
 	LoadCharacters(pool, characters)
 }
 
-func FetchData() ([][]interface{}, [][]string) {
+func FetchData(pool *pgxpool.Pool) ([][]interface{}, [][]string) {
 	var (
 		streamers  [][]interface{} = make([][]interface{}, 0)
 		characters [][]string      = make([][]string, 0)
+		tempChars  [][]string      = make([][]string, 0)
+		tempStrem  [][]string      = make([][]string, 0)
+		wg         sync.WaitGroup
 	)
 
 	col := colly.NewCollector()
 	col.OnHTML("#characters", func(h *colly.HTMLElement) {
+		wg.Add(1)
+		go func() {
+			resChars, _ := pool.Query(ctx, "SELECT s.pid, c.fullname FROM characters c JOIN streamers s ON c.player = s.id")
+			for resChars.Next() {
+				var pid, fullname string
+				resChars.Scan(&pid, &fullname)
+				tempChars = append(tempChars, []string{fullname, pid})
+			}
+			wg.Done()
+		}()
+
+		wg.Add(1)
+		go func() {
+			resStrem, _ := pool.Query(ctx, "SELECT username, pid FROM streamers")
+			for resStrem.Next() {
+				var pid, username string
+				resStrem.Scan(&username, &pid)
+				tempStrem = append(tempStrem, []string{pid, username})
+			}
+			wg.Done()
+		}()
+
+		wg.Wait()
+
 		h.ForEach("div[data-streamer]", func(_ int, e *colly.HTMLElement) {
 			streamerID := e.Attr("data-streamer")
 			characterName := e.ChildText(".charName")
@@ -68,18 +106,31 @@ func FetchData() ([][]interface{}, [][]string) {
 			streamerName := e.ChildText(".profileLink")
 			streamerName = strings.ToLower(streamerName)
 
-			isUnique := true
+			isUniqueStreamer := true
+			for _, streamer := range tempStrem {
+				if streamer[0] == streamerID {
+					isUniqueStreamer = false
+				}
+			}
 			for _, streamer := range streamers {
 				if streamer[0] == streamerID {
-					isUnique = false
+					isUniqueStreamer = false
 					break
 				}
 			}
-			if isUnique {
+			if isUniqueStreamer {
 				streamers = append(streamers, []interface{}{streamerID, streamerName})
 			}
 
-			characters = append(characters, []string{characterName, streamerID})
+			isUniqueCharacter := true
+			for _, character := range tempChars {
+				if character[0] == characterName && character[1] == streamerID {
+					isUniqueCharacter = false
+				}
+			}
+			if isUniqueCharacter {
+				characters = append(characters, []string{characterName, streamerID})
+			}
 		})
 	})
 	col.Visit("https://nopixel.hasroot.com/characters.php")
@@ -90,6 +141,8 @@ func FetchData() ([][]interface{}, [][]string) {
 	return streamers, characters
 }
 
+// ClearDB drops the existing schema in the database and recreates it.
+// To be used only in case of a fresh database or a data corruption scenario.
 func ClearDB(pool *pgxpool.Pool) error {
 	_, err := pool.Exec(ctx, schema)
 	return err
