@@ -77,7 +77,9 @@ func FetchData(pool *pgxpool.Pool) ([][]interface{}, [][]string) {
 	col.OnHTML("#characters", func(h *colly.HTMLElement) {
 		wg.Add(1)
 		go func() {
-			resChars, _ := pool.Query(ctx, "SELECT s.pid, c.fullname FROM characters c JOIN streamers s ON c.player = s.id")
+			resChars, _ := pool.Query(ctx, `
+			SELECT s.pid, c.fullname FROM characters c 
+			JOIN streamers s ON c.player = s.id;`)
 			for resChars.Next() {
 				var pid, fullname string
 				resChars.Scan(&pid, &fullname)
