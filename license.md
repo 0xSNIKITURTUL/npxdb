@@ -618,7 +618,7 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the “copyright” line and a pointer to where the full notice is found.
 
-    NopixelDB is an ETL and query tool for the nopixel database at
+    NPXDB is an ETL and query tool for the nopixel database at
     <https://nopixel.hasroot.com/characters.php>
     Copyright (C) 2022  Dishant Mishra
 

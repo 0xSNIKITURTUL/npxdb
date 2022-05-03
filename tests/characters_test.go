@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/damishra/NopixelDB/shared"
+	"github.com/damishra/npxdb/shared"
 	"github.com/jackc/pgx/v4"
 	"github.com/joho/godotenv"
 )

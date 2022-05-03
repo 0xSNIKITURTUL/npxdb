@@ -1,4 +1,4 @@
-module github.com/damishra/NopixelDB
+module github.com/damishra/npxdb
 
 go 1.17
 

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/damishra/NopixelDB/shared"
+	"github.com/damishra/npxdb/shared"
 	"github.com/jackc/pgx/v4"
 )
 

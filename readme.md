@@ -1,4 +1,4 @@
-# NopixelDB
+# NPXDB
 
 An ETL tool and Vercel serverless function to extract and load nopixel character and
 streamer info from [Hasroot](https://nopixel.hasroot.com/characters.php) and make the
